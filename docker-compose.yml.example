@@ -1,97 +1,132 @@
 version: '3'
 services:
-    #Nginx Service
-    laradok_nginx:
-      image: nginx:latest
-      container_name: laradok_nginx
-      tty: true
-      ports:
-          - 8081:80
-      volumes:
-          - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-          - ./.docker/nginx/app/app.conf:/etc/nginx/conf.d/default.conf 
-      depends_on:
-          - laradok_app
-      links:
-          - laradok_app
-      environment:
-        - X_SERVER_TYPE=nginx
-      networks:
-        - laradok-network
+  nginx:
+    image: nginx:latest
+    container_name: project_nginx
+    volumes:
+      - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf #app and api panel
+      - ./.docker/nginx/local.conf:/etc/nginx/conf.d/default.conf #app and api panel
+      - ./.data/nginx/logs:/var/log/nginx
+      - ./app:/var/www/app
+      #- ./.data/certs/certbot/conf:/etc/letsencrypt #uncomment when production deploy
+      #- ./.data/certs/certbot/www:/var/www/certbot #uncomment when production deploy
+    ports:
+      - 8006:80
+      #- 443:443 #uncomment when production deploy
+      #- 80:80 #uncomment when production deploy
+    depends_on:
+      - app
+      - web
+    networks:
+      - project_network
+    environment:
+      - X_SERVER_TYPE=nginx
 
-    #PHP Service
-    laradok_app:
-      build:
-        context: .
-        dockerfile: ./.docker/app/Dockerfile
-      container_name: laradok_app
-      volumes:
-        - ./app:/var/www/app
-      restart: always
-      environment:
-        - X_SERVER_TYPE=app
-      networks:
-        - laradok-network
+  app:
+    build:
+      context: .
+      dockerfile: ./.docker/app/Dockerfile
+    container_name: project_app
+    volumes:
+      - ./app:/var/www/app
+    restart: always
+    networks:
+      - project_network
+    environment:
+      - X_SERVER_TYPE=app
 
-    #Worker Service
-    laradok_worker:
-      build:
-        context: .
-        dockerfile: ./.docker/worker/Dockerfile
-      container_name: laradok_worker
-      volumes:
-        - ./app:/var/www/app
-        - ./storage/logs/worker:/var/log
-      environment:
-        - X_SERVER_TYPE=worker
-        - COMPOSER_PROCESS_TIMEOUT=600
 
-      networks:
-        - laradok-network
+  web:
+    build:
+      context: .
+      dockerfile: .docker/web/Dockerfile
+    container_name: project_web
+    stdin_open: true
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    env_file:
+      - ./web/.env
+    networks:
+      - project_network
+    environment:
+      - X_SERVER_TYPE=web
 
-    #MySQL Service
-    laradok_db:
-      image: mysql:latest
-      container_name: laradok_db
-      restart: always
-      environment:
-        MYSQL_DATABASE: ${DB_NAME}
-        MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      volumes:
-        - ./.data/mysql:/var/lib/mysql
-      ports:
-        - "3306:3306"
-      networks:
-        - laradok-network
+  redis:
+    image: redis:latest
+    container_name: project_redis
+    ports:
+      - ${REDIS_EXPOSE_PORT}:6379
+    volumes:
+      - ./.data/redis:/data
+    entrypoint: redis-server --appendonly yes
+    restart: always
+    networks:
+      - project_network
 
-    #mailhog service for testing emails
-    laradok_mailhog:
-      image: mailhog/mailhog
-      container_name: laradok_mailhog
-      logging:
-        driver: 'none'  # disable saving logs
-      ports:
-        - 1025:1025 # smtp server
-        - 8025:8025 # web ui
-      networks:
-        - laradok-network
+  worker:
+    build:
+      context: .
+      dockerfile: ./.docker/worker/Dockerfile
+    container_name: project_worker
+    command:
+      - /usr/bin/supervisord
+      - -c
+      - /etc/supervisord.conf
+    volumes:
+      - ./app:/var/www/app
+      - ./.data/logs/worker:/var/log
+      - ./.docker/worker/worker.conf:/etc/supervisor/conf.d/worker.conf
+    networks:
+      - project_network
+    environment:
+      - X_SERVER_TYPE=worker
 
-    #REDIS
-    laradok_redis:
-      image: redis:latest
-      container_name: redis
-      ports:
-        - "6379:6379"
-      volumes:
-        - ./.data/redis:/data # persistent storage
-      networks:
-        - laradok-network
-        
-#Volumes
+  database:
+    container_name: project_database
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - ./.data/postgres:/data/postgres
+      #- ./.docker/postgres/create_admin_db.sql:/docker-entrypoint-initdb.d/create_admin_db.sql
+
+    ports:
+      - "5432:5432"
+    # restart: unless-stopped
+    restart: always
+    networks:
+      - project_network
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: project_mailhog
+    logging:
+      driver: 'none'  # disable saving logs
+    ports:
+      - 1026:1025 # smtp server
+      - 8025:8025 # web ui
+    networks:
+      - project_network
+
+  certbot:
+    image: certbot/certbot
+    container_name: rvws_certbot
+    restart: unless-stopped
+    volumes:
+      - ./.data/certs/certbot/conf:/etc/letsencrypt
+      - ./.data/certs/certbot/www:/var/www/certbot
+    networks:
+      - project_network
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
 volumes:
-  dbdata:
+  pgdata:
+  redis:
     driver: local
-    
+
 networks:
-  laradok-network:
+  project_network:
     driver: bridge
