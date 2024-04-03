@@ -9,6 +9,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Closure;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -19,13 +20,14 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/home';
-
+    public const HOME = '/';
+    public string $backendPrefix = '';
     /**
      * Define your route model bindings, pattern filters, and other route configuration.
      */
     public function boot()
     {
+
         $this->configureRateLimiting();
 
         // $this->routes(function () {
@@ -34,14 +36,52 @@ class RouteServiceProvider extends ServiceProvider
         //         ->group(base_path('routes/api.php'));
 
         // });
+        Route::prefix(env("ROUTE_API_PREFIX", ""))
+            ->middleware(['api'])
+            ->namespace($this->namespace)
+            ->group(base_path('routes/api.php'));
 
-        $this->routes(function () {
-            Route::middleware(['api'])
-                ->as('api:')
-                ->group(
-                    base_path('routes/api.php')
-                );
-        });
+        Route::prefix(env("ROUTE_BACKEND_PREFIX", ""))
+            ->middleware(['web'])
+            ->namespace($this->namespace)
+            ->group(base_path('routes/web.php'));
+
+//        $this->routes(function () {
+//            Route::middleware(['api'])
+//                ->as('api:')
+//                ->group(
+//                    base_path('routes/api.php')
+//                );
+//        });
+
+//        Route::prefix($this->backendPrefix)
+//            ->middleware('web')
+//            ->namespace($this->namespace)
+//            ->group(base_path('routes/web.php'));
+//             $this->registerRoutes(function () {
+////            Route::prefix(url_concat($this->backendPrefix, env("ROUTE_API_PREFIX", "api/v1")))
+////                ->middleware(['api', 'localization'])
+////                ->namespace($this->namespace)
+////                ->group(base_path('routes/admin-api.php'));
+////
+////            Route::prefix(url_concat($this->backendPrefix, env("ROUTE_API_PREFIX", "api/v1")))
+////                ->middleware(['api', 'localization'])
+////                ->namespace($this->namespace)
+////                ->group(base_path('routes/storefront-api.php'));
+//
+//            Route::prefix($this->backendPrefix)
+//                ->middleware('web')
+//                ->namespace($this->namespace)
+//                ->group(base_path('routes/web.php'));
+//
+////            if (file_exists(base_path('routes/web.php')) && app()->environment() !== 'production') {
+////                Route::prefix(url_concat($this->backendPrefix, 'web'))
+////                    ->middleware('web')
+////                    ->namespace($this->namespace)
+////                    ->group(base_path('routes/web.php'));
+////
+////            }
+//        }, env('ROUTE_BACKEND_PREFIX', ''));
     }
 
     /**
@@ -64,5 +104,13 @@ class RouteServiceProvider extends ServiceProvider
                 key: $request->user()?->id ?: $request->ip(),
             ),
         );
+    }
+
+    protected function registerRoutes(Closure $routesCallback, string $prefix = '')
+    {
+        $this->loadRoutesUsing = $routesCallback;
+        $this->backendPrefix = $prefix;
+
+        return $this;
     }
 }

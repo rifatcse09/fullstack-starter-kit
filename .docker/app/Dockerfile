@@ -97,7 +97,9 @@ RUN chmod +x /usr/bin/startx.sh
 RUN mkdir -p storage/logs
 RUN touch storage/logs/worker.log
 
+RUN chmod -R 755 storage/logs
 RUN chown -R www-data:www-data /var/www/app
 RUN chown -R www-data:www-data /var/www/app/storage
+
 
 ENTRYPOINT ["/usr/bin/startx.sh"]

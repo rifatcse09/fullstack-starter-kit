@@ -160,3 +160,45 @@ if (! function_exists('negative_value')) {
         return 0 - abs($value);
     }
 }
+
+if (!function_exists('url_concat')) {
+    function url_concat(...$uris): string
+    {
+        /**
+         * @var \App\Utilities\UrlManager $urlManager
+         */
+        $urlManager = app(\App\Utilities\UrlManager::class);
+
+        foreach ($uris as $uri) {
+            if (blank($uri)) {
+                continue;
+            }
+
+            $urlManager->concat($uri);
+        }
+
+        $uri = $urlManager->getUrl();
+        $urlManager->setBaseUrl('');
+
+        return $uri;
+
+    }
+}
+
+if (!function_exists('backend_url')) {
+    /**
+     * @param $uri
+     * @return string
+     */
+    function backend_url($uri): string
+    {
+        return url_concat(env('APP_URL', 'http://localhost:8008'), env('ROUTE_BACKEND_PREFIX', '/-'), $uri);
+    }
+}
+
+if (!function_exists('app_url')) {
+    function app_url($uri): string
+    {
+        return url_concat(env('APP_URL', 'http://localhost:8008'), $uri);
+    }
+}

@@ -59,6 +59,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        dd($exception,$request);
         if ($request->expectsJson() && $request->is('api/*')) {
             // Handle API-specific errors
             return $this->apiException($exception);

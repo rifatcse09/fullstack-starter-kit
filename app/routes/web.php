@@ -13,6 +13,27 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//Route::prefix('app')->group(function () {
+//    Route::get('/', function () {
+//        return "sweet home!";
+//        //return view('welcome');
+//    });
+//
+//    // Add more routes here...
+//});
+
+//Route::group(array('prefix' => 'admin/'), function() {
+//    // Controllers
+//    Route::get('/', function () {
+//        return "sweet home!";
+//        //return view('welcome');
+//    });
+//});
+
 Route::get('/', function () {
-    return view('welcome');
+    return "sweet home!";
+    //return view('welcome');
 });
+
+
+
