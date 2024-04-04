@@ -16,12 +16,12 @@ export default defineConfig(() => {
             'process.env': process.env,
         },
         server: {
-            port: process.env.FRONTEND_PORT,
-        },
-        preview: {
             port: 3000,
-            strictPort: true,
-            host: true
         },
+        // preview: {
+        //     port: 3000,
+        //     strictPort: true,
+        //     host: true
+        // },
     };
 });
