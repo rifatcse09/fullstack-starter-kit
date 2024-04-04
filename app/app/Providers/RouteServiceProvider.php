@@ -54,34 +54,34 @@ class RouteServiceProvider extends ServiceProvider
 //                );
 //        });
 
-//        Route::prefix($this->backendPrefix)
-//            ->middleware('web')
-//            ->namespace($this->namespace)
-//            ->group(base_path('routes/web.php'));
-//             $this->registerRoutes(function () {
-////            Route::prefix(url_concat($this->backendPrefix, env("ROUTE_API_PREFIX", "api/v1")))
-////                ->middleware(['api', 'localization'])
-////                ->namespace($this->namespace)
-////                ->group(base_path('routes/admin-api.php'));
-////
-////            Route::prefix(url_concat($this->backendPrefix, env("ROUTE_API_PREFIX", "api/v1")))
-////                ->middleware(['api', 'localization'])
-////                ->namespace($this->namespace)
-////                ->group(base_path('routes/storefront-api.php'));
-//
-//            Route::prefix($this->backendPrefix)
-//                ->middleware('web')
+        Route::prefix($this->backendPrefix)
+            ->middleware('web')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/web.php'));
+             $this->registerRoutes(function () {
+//            Route::prefix(url_concat($this->backendPrefix, env("ROUTE_API_PREFIX", "api/v1")))
+//                ->middleware(['api', 'localization'])
 //                ->namespace($this->namespace)
-//                ->group(base_path('routes/web.php'));
+//                ->group(base_path('routes/admin-api.php'));
 //
-////            if (file_exists(base_path('routes/web.php')) && app()->environment() !== 'production') {
-////                Route::prefix(url_concat($this->backendPrefix, 'web'))
-////                    ->middleware('web')
-////                    ->namespace($this->namespace)
-////                    ->group(base_path('routes/web.php'));
-////
-////            }
-//        }, env('ROUTE_BACKEND_PREFIX', ''));
+//            Route::prefix(url_concat($this->backendPrefix, env("ROUTE_API_PREFIX", "api/v1")))
+//                ->middleware(['api', 'localization'])
+//                ->namespace($this->namespace)
+//                ->group(base_path('routes/storefront-api.php'));
+
+            Route::prefix($this->backendPrefix)
+                ->middleware('web')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/web.php'));
+
+//            if (file_exists(base_path('routes/web.php')) && app()->environment() !== 'production') {
+//                Route::prefix(url_concat($this->backendPrefix, 'web'))
+//                    ->middleware('web')
+//                    ->namespace($this->namespace)
+//                    ->group(base_path('routes/web.php'));
+//
+//            }
+        }, env('ROUTE_BACKEND_PREFIX', ''));
     }
 
     /**

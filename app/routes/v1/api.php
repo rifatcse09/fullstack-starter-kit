@@ -12,6 +12,3 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('restaurants')->as('restaurants:')->group(
     base_path('routes/v1/restaurants.php'),
 );
-
-
-?>
