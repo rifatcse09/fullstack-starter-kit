@@ -1,20 +1,40 @@
-FROM node:latest as build-stage
+# pull official base image
+FROM node:18.19.0-alpine
 
-WORKDIR /app
+ARG SERVER_ENVIRONMENT
+# Add Repositories
+RUN rm -f /etc/apk/repositories &&\
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.12/main" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.12/community" >> /etc/apk/repositories
 
-COPY ./web .
+RUN apk update && apk add --no-cache  \
+    libzip-dev \
+    bzip2-dev \
+    libwebp-dev \
+    zip \
+    bash \
+    icu-dev \
+    zlib-dev \
+    curl-dev \
+    git \
+    vim
 
-COPY package*.json ./
+RUN npm install --global pm2
+# RUN npm install --global yarn
 
-RUN npm install
+COPY ./web /usr/src/web
 
-RUN npm run build
+WORKDIR /usr/src/web
 
-# Production stage
-FROM nginx:latest
+# RUN npm install
+# RUN yarn cache clean
 
-# Copy build files from the previous stage
-COPY --from=build-stage /app/dist /usr/share/nginx/html
+RUN yarn install -f
 
-# Start Nginx
-CMD ["npm", "run", "dev"]
+RUN yarn build
+
+EXPOSE 3000
+
+
+CMD HOST=0.0.0.0 pm2-runtime start yarn --interpreter bash --name web -- preview
+#CMD HOST=0.0.0.0 pm2-runtime start yarn --interpreter bash --name web -- start

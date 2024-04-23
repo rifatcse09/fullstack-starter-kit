@@ -18,10 +18,14 @@ export default defineConfig(() => {
         server: {
             port: 3000,
         },
-        // preview: {
-        //     port: 3000,
-        //     strictPort: true,
-        //     host: true
-        // },
+        // Build options
+        build: {
+            outDir: 'dist' // Output directory for the built files
+        },
+        preview: {
+            port: 3000,
+            strictPort: true,
+            host: true
+        },
     };
 });
