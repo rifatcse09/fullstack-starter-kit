@@ -29,4 +29,7 @@ final class RestaurantInfoController extends Controller
 
         return api([$data])->success('Restaurants Created Successfully');
     }
+    public function delete(int $id) {
+
+    }
 }

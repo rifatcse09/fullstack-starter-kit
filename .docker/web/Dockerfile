@@ -37,4 +37,4 @@ EXPOSE 3000
 
 
 CMD HOST=0.0.0.0 pm2-runtime start yarn --interpreter bash --name web -- preview
-#CMD HOST=0.0.0.0 pm2-runtime start yarn --interpreter bash --name web -- start
+#CMD HOST=0.0.0.0 pm2-runtime start yarn --interpreter bash --name web -- dev

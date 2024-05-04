@@ -8,4 +8,5 @@ use App\Http\Controllers\V1\Restaurant\RestaurantInfoController;
 
 Route::post('/', [RestaurantInfoController::class,'store']);
 Route::get('{id}',[RestaurantInfoController::class,'getRestaurant'])->name('restaurant.id');
+Route::delete('/delete',[RestaurantInfoController::class,'delete']);
 
